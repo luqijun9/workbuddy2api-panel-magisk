@@ -4,7 +4,7 @@
 #       scripts/ci/fetch-runtime.sh 2026.10.29.1418
 set -euo pipefail
 
-REPO="${WB2A_UPSTREAM_REPO:-misakano7545/workbuddy2api-panel}"
+REPO="${WB2A_UPSTREAM_REPO:-luqijun9/workbuddy2api-panel}"
 TAG="${1:?需要上游 tag}"
 TAG="${TAG#v}"
 ASSET="wb2api-panel-${TAG}-linux-arm64.zip"
