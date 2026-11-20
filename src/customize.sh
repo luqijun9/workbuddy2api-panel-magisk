@@ -257,8 +257,8 @@ if [ ! -f "$DATA_DIR/update.conf" ]; then
         '# 下载源（逗号分隔，末项留空=GitHub 直连兜底）。默认已内置两个公共加速；' \
         '# 有自建反代就写自己的，例如 WB2A_UPDATE_SOURCES=https://gh.你的域名/' \
         '#WB2A_UPDATE_SOURCES=https://gh-proxy.com/,https://ghproxy.net/,https://ghfast.top/,' \
-        '# 上游仓库（默认 misakano7545/workbuddy2api-panel）' \
-        '#WB2A_UPDATE_REPO=misakano7545/workbuddy2api-panel' \
+        '# 上游仓库（默认 luqijun9/workbuddy2api-panel）' \
+        '#WB2A_UPDATE_REPO=luqijun9/workbuddy2api-panel' \
         > "$DATA_DIR/update.conf"
 fi
 chmod 0600 "$DATA_DIR/update.conf" 2>/dev/null
