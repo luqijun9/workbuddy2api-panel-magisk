@@ -76,7 +76,7 @@ jobs:
           V: ${{ steps.ver.outputs.version }}
           UP: ${{ steps.up.outputs.tag }}
           PRE: ${{ steps.up.outputs.prerelease }}
-          UP_REPO: misakano7545/workbuddy2api-panel
+          UP_REPO: luqijun9/workbuddy2api-panel
         run: |
           set -euo pipefail
           zip="publish/WorkBuddy2API-Magisk-v${V}.zip"
@@ -109,7 +109,7 @@ jobs:
         env:
           UP: ${{ steps.up.outputs.tag }}
           V: ${{ steps.ver.outputs.version }}
-          UP_REPO: misakano7545/workbuddy2api-panel
+          UP_REPO: luqijun9/workbuddy2api-panel
           # 读上游 release notes 用来写「上游这版改了什么」，缺了不致命（只少那一段）
           GH_TOKEN: ${{ github.token }}
         run: |
