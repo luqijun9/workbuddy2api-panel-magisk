@@ -3,7 +3,7 @@
 #   skip=1 表示和仓库里 UPSTREAM 记录的一致（没有新版），除非 FORCE=1。
 set -euo pipefail
 
-REPO="${WB2A_UPSTREAM_REPO:-misakano7545/workbuddy2api-panel}"
+REPO="${WB2A_UPSTREAM_REPO:-luqijun9/workbuddy2api-panel}"
 IN="${1:-}"
 
 TAG="$IN"
