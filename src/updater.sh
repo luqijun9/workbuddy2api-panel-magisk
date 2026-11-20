@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# 自动更新：查 GitHub Releases（misakano7545/workbuddy2api-panel），拉官方
+# 自动更新：查 GitHub Releases（luqijun9/workbuddy2api-panel），拉官方
 # wb2api-panel-<ver>-linux-arm64.zip，用 GitHub API 的 assets[].digest 校验 sha256，
 # 解压出 wb2api 后只替换 rt/bin/（运行体权威位置，见 rt.sh），再重启网关。
 #
@@ -29,7 +29,7 @@ case "$WORK" in
 esac
 
 RT="$WORK/rt"
-REPO="${WB2A_UPDATE_REPO:-misakano7545/workbuddy2api-panel}"
+REPO="${WB2A_UPDATE_REPO:-luqijun9/workbuddy2api-panel}"
 GH="${WB2A_UPDATE_API:-https://api.github.com}"
 STAMP="$WORK/update.stamp"
 LOG="$WORK/update.log"
