@@ -47,6 +47,7 @@
     <div class="row"><span class="k">进程</span><span class="v" id="pmsg">—</span></div>
     <div class="row"><span class="k">版本</span><span class="v"><code id="ver">—</code> <span class="dim" id="chk"></span></span></div>
     <div class="row"><span class="k">更新</span><span class="v" id="upd">检查中…</span></div>
+    <div class="row"><span class="k">监听</span><span class="v" id="listen">—</span></div>
   </div>
 
   <button class="b" id="copy" type="button">复制密钥</button>
@@ -57,6 +58,9 @@
   <div class="sep"></div>
   <button class="b" id="restart" type="button">重启网关进程</button>
   <button class="b" id="stop" type="button">停止网关进程</button>
+
+  <div class="sep"></div>
+  <button class="b" id="lan" type="button">开放局域网访问</button>
 
   <p class="tip" id="tip">&nbsp;</p>
 </div>
@@ -225,10 +229,78 @@
     act(this, '停止中', 'sh /data/adb/modules/wb2a/service.sh stop', '已停止', false);
   });
 
+  // ---------- 监听范围：局域网 / 仅本机 ----------
+  // 真正决定绑定地址的是 service.sh 启动时读的 $WORK/listen（lib.sh 的 wb2a_listen_addr）：
+  //   local 或 127.0.0.1  → 绑 127.0.0.1，只有本机能连
+  //   lan / 0.0.0.0 / 空  → 绑 0.0.0.0，同网段设备都能连
+  // 改完必须重启网关才生效：service.sh 启动时才把 listen 写进 config.json 的 "listen" 字段。
+  // 与「执行」页的 sh action.sh config 改的是同一个文件，两边等价。
+  var listenRow = document.getElementById('listen');
+  var lanBtn = document.getElementById('lan');
+  var lanOn = false;
+
+  function lanIp() {
+    var out = sh('/system/bin/ip -4 addr show wlan0 2>/dev/null') ||
+              sh('/system/bin/ifconfig wlan0 2>/dev/null') || '';
+    var m = out.match(/inet\s+(?:addr:)?(\d+\.\d+\.\d+\.\d+)/);
+    return m ? m[1] : '';
+  }
+
+  function paintListen() {
+    var raw = sh('cat /data/adb/wb2a/listen 2>/dev/null');
+    if (raw === null) {
+      listenRow.innerHTML = '<span class="warn">读取不到</span> <span class="dim">需管理器 shell 权限</span>';
+      lanBtn.disabled = true;
+      return;
+    }
+    var v = String(raw).replace(/\s+/g, '');
+    // 与 lib.sh 一致：只有 local/127.0.0.1 算仅本机，空值和其它值都落到 0.0.0.0
+    lanOn = !(v === 'local' || v === '127.0.0.1');
+    if (lanOn) {
+      var ip = lanIp();
+      listenRow.innerHTML = '<span class="warn">局域网开放</span> <span class="dim">' +
+        (ip ? 'http://' + ip + ':' + PORT + '/panel/' : '没连 WiFi，连上后生效') + '</span>';
+      lanBtn.textContent = '关闭局域网（改回仅本机）';
+    } else {
+      listenRow.innerHTML = '<span class="ok">仅本机</span> <span class="dim">127.0.0.1:' + PORT + '</span>';
+      lanBtn.textContent = '开放局域网访问';
+    }
+  }
+  paintListen();
+
+  lanBtn.addEventListener('click', function () {
+    if (busy) return;
+    var to = lanOn ? 'local' : 'lan';
+    if (!lanOn && !confirm('开放后同网段任何设备都能访问 http://<手机IP>:' + PORT +
+        '/panel/（面板要密钥，但端口对全网段可见）。继续？')) return;
+    busy = true;
+    var old = lanBtn.textContent;
+    lanBtn.textContent = '切换中…';
+    lanBtn.disabled = true;
+    pmsg.textContent = '切换监听范围并重启…';
+    // ksu.exec 同步阻塞：先让「切换中…」画出来再执行
+    setTimeout(function () {
+      var w = sh('echo ' + to + ' > /data/adb/wb2a/listen && chmod 600 /data/adb/wb2a/listen');
+      if (w === null) {
+        pmsg.innerHTML = '<span class="warn">没有 shell 权限，只能用命令行改：sh action.sh config</span>';
+      } else {
+        sh('sh /data/adb/modules/wb2a/service.sh restart');
+        var id = refreshState();
+        pmsg.innerHTML = id
+          ? '<span class="ok">已切到' + (to === 'lan' ? '局域网' : '仅本机') + '</span> <span class="dim">pid ' + id + '</span>'
+          : '<span class="warn">已写入，但进程没起来 —— 看 run.log</span>';
+      }
+      lanBtn.disabled = false;
+      busy = false;
+      paintListen();
+    }, 60);
+  });
+
   document.getElementById('tip').innerHTML =
     '面板首次打开要填上面的密钥（存在本机 localStorage）。<br>' +
     '同网段的电脑访问：<code>http://&lt;手机IP&gt;:' + PORT + '/panel/</code>，' +
     '改端口 <code>sh action.sh config</code>。<br>' +
+    '监听范围＝上面的按钮（改 <code>/data/adb/wb2a/listen</code>，重启网关后生效）。<br>' +
     '升级＝管理器里刷 Releases 最新 zip（刷完即生效，不用重启）；自动更新 <code>sh action.sh auto on</code>。';
 })();
 </script>
